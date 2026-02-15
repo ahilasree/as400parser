@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "as400-parser"
+version = "0.1.0"
+description = "Modular IBM i artifact parser and analyzer (CL, RPG, DB2, DSPF)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "antlr4-python3-runtime>=4.13.0",
+    "reportlab>=4.0.0; extra == 'pdf'",
+]
+
+[project.optional-dependencies]
+pdf = ["reportlab>=4.0.0"]
+
+[tool.setuptools.packages.find]
+include = ["core*", "cl*", "rpg*", "db2*", "dspf*", "ui*"]

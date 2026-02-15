@@ -1,0 +1,8 @@
+# Core parsing (required)
+antlr4-python3-runtime>=4.13.0
+
+# Parser generation (optional, for scripts/generate_parsers.py)
+antlr4-tools>=0.2.2
+
+# PDF export (optional but recommended)
+reportlab>=4.0.0

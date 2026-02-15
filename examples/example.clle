@@ -1,0 +1,11 @@
+         PGM
+         DCL VAR(&MSG) TYPE(*CHAR) LEN(50)
+         DCL VAR(&RC) TYPE(*DEC) LEN(5 0)
+         SNDPGMMSG MSG('Starting CL program')
+         CALL PGM(MYPGM) PARM(&MSG &RC)
+         IF COND(&RC *GT 0) THEN(DO)
+            SNDPGMMSG MSG('Error occurred') MSGTYPE(*DIAG)
+            GOTO CMDLBL(ENDIT)
+         ENDDO
+ENDIT:   RETURN
+         ENDPGM

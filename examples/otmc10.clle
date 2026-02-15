@@ -1,0 +1,67 @@
+/* ****************************************************************************/
+/* Program Name  : OTMC1090                                                   */
+/* Created By    : Cognizant Technology Solutions                             */
+/* Project Name  : OTM Appointment Repush                                     */
+/* Task          : FX0028862                                                  */
+/* Date          : 10/12/2018                                                 */
+/* Description   : Driver CL for Appointment Repush process to OTM            */
+/* ****************************************************************************/
+/*                    Modification Log                                        */
+/*----------------------------------------------------------------------------*/
+/* Change Description:                                                        */
+/* Change Date       :                                                        */
+/* Change By         :                                                        */
+/* Change Task       :                                                        */
+/* Scan              :                                                        */
+/* ****************************************************************************/
+/*----------------------------------------------------------------------------*/
+                                                                                
+/* ****************************************************************************/
+/* Beginning of the program                                                   */
+/* ****************************************************************************/
+                                                                                
+             PGM                                                                
+                                                                                
+             DCL        VAR(&LIBR) TYPE(*CHAR) LEN(10)                          
+             DCL        VAR(&TEMPFILE) TYPE(*CHAR) LEN(10) +                    
+                          VALUE('FDIAPTP')                                      
+                                                                                
+/* ****************************************************************************/
+/* Create temporary files in QTEMP                                            */
+/* ****************************************************************************/
+                                                                                
+/*   * Ensure temporary files are not in QTEMP                               */ 
+             DLTF       FILE(QTEMP/FDIAPTP)                                     
+             MONMSG     MSGID(CPF0000)                                          
+                                                                                
+             RTVOBJD    OBJ(&TEMPFILE) OBJTYPE(*FILE) RTNLIB(&LIBR)             
+                                                                                
+/*   * Create temporary files in QTEMP                                       */ 
+             CRTDUPOBJ  OBJ(&TEMPFILE) FROMLIB(&LIBR) OBJTYPE(*FILE) +          
+                          TOLIB(QTEMP) NEWOBJ(&TEMPFILE)                        
+             MONMSG     MSGID(CPF0000)                                          
+                                                                                
+/*   * Override Appointment Upload file to Temporary File                    */ 
+                                                                                
+             OVRDBF     FILE(&TEMPFILE) TOFILE(QTEMP/&TEMPFILE)                 
+                                                                                
+/* ****************************************************************************/
+/* Appointment data building process                                          */
+/* ****************************************************************************/
+                                                                                
+             CALL       PGM(OTMR1090)                                           
+                                                                                
+/* ****************************************************************************/
+/* Reclaim resources                                                          */
+/* ****************************************************************************/
+             RCLRSC                                                             
+             DLTOVR     FILE(&TEMPFILE)                                                     
+             MONMSG     MSGID(CPF0000)                                                      
+                                                                                            
+             DLTF       FILE(QTEMP/&TEMPFILE)                                               
+             MONMSG     MSGID(CPF0000)                                                      
+                                                                                            
+/* ****************************************************************************/            
+/* End of the program                                                         */            
+/* ****************************************************************************/            
+             ENDPGM                                                                         

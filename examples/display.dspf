@@ -1,0 +1,7 @@
+     A                                      DSPSIZ(24 80 *DS3)
+     A          R RECORD01
+     A            FIELD1       10  5  2 REFFLD(FLD1)
+     A                                      DSPATR(HI)
+     A            FIELD2       20 10  3 COLOR(BLU)
+     A          R RECORD02
+     A            FIELD3       10 15  2

@@ -1,0 +1,9 @@
+     H DftActGrp(*No) ActGrp(*New)
+     D VAR1            S              5  0
+     D VAR2            S             10A
+     C                   EVAL      VAR1 = 0
+     C                   EVAL      VAR2 = 'HELLO'
+     C                   EVAL      VAR1 = 1
+     C                   CALL      MYPROC
+     C                   EVAL      *INLR = *ON
+     C                   RETURN
