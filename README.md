@@ -56,6 +56,8 @@ AS400Parser/
 │   └── runner.py
 ├── ui/                 # Tkinter UI
 │   └── main_ui.py
+├── api/                # Web API endpoint
+│   └── app.py
 ├── grammars/           # ANTLR grammar files (.g4)
 ├── scripts/            # Build/generation scripts
 │   └── generate_parsers.py
@@ -89,6 +91,34 @@ With email report (requires SMTP config):
 python main.py --mode combined --export-pdf output/report.pdf --email-to user@example.com --smtp-host smtp.example.com --smtp-port 587 --smtp-user user --smtp-pass pass --smtp-tls examples/*.clle examples/*.rpgle
 ```
 
+### Web API
+
+Start the REST API server:
+
+```bash
+python api/app.py
+```
+
+API endpoint: `http://localhost:5000/api/parse`
+
+```bash
+curl -X POST http://localhost:5000/api/parse \
+  -H "Content-Type: application/json" \
+  -d '{
+    "files": ["examples/example.clle"],
+    "mode": "combined",
+    "enable_pdf": true,
+    "enable_email": true,
+    "email_config": {
+      "to": "user@example.com",
+      "smtp_host": "smtp.gmail.com",
+      "smtp_user": "user@gmail.com",
+      "smtp_pass": "password",
+      "smtp_tls": "true"
+    }
+  }'
+```
+
 ### Programmatic
 
 ```python
@@ -119,7 +149,7 @@ rpg_result = run_rpg_file("prog.rpgle")
 Launch the Tkinter UI to select files/folders, configure mode and output, and run analysis:
 
 ```bash
-python -m ui.main_ui
+python ui/main_ui.py
 ```
 
 ## Pipeline Modes
@@ -151,4 +181,4 @@ See `DIAGRAMS.md` for Mermaid diagram code blocks visualizing the architecture a
 
 ## Troubleshooting
 
-- **ImportError: cannot import name 'dataclass'** – Ensure there is no file named `ast.py` in the project root, as it shadows Python’s built-in `ast` module. If you have a custom AST module, rename it (e.g. to `legacy_ast.py`).
+- **ImportError: cannot import name 'dataclass'** – Ensure there is no file named `ast.py` in the project root, as it shadows Python's built-in `ast` module. If you have a custom AST module, rename it (e.g. to `legacy_ast.py`).
