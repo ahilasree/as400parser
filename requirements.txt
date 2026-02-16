@@ -6,3 +6,20 @@ antlr4-tools>=0.2.2
 
 # PDF export (optional but recommended)
 reportlab>=4.0.0
+
+# Web API dependencies
+flask>=3.1.0
+flask-cors>=4.0.0
+waitress>=3.0.0
+
+# Email functionality (built-in smtplib, no extra package needed)
+
+# Development and testing
+pytest>=7.0.0
+pytest-flask>=1.2.0
+
+# Production deployment
+gunicorn>=21.0.0
+
+# Docker and cloud utilities
+python-dotenv>=1.0.0

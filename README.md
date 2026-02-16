@@ -5,7 +5,41 @@ Modular Python codebase for parsing and analyzing IBM i artifacts (CL, RPG, DB2,
 ## Requirements
 
 - Python 3.11+
-- Dependencies in `requirements.txt` (ANTLR4 runtime, reportlab for PDF export)
+- Docker (for containerization)
+- kubectl (for Kubernetes deployment)
+- Google Cloud SDK (for GCP deployment)
+
+### Dependencies
+
+Install all required packages:
+
+```bash
+# Core dependencies
+antlr4-python3-runtime>=4.13.0
+antlr4-tools>=0.2.2
+reportlab>=4.0.0
+
+# Web API
+flask>=3.1.0
+flask-cors>=4.0.0
+waitress>=3.0.0
+
+# Email and utilities
+smtplib-ssl>=1.0.0
+python-dotenv>=1.0.0
+
+# Production
+gunicorn>=21.0.0
+
+# Testing
+pytest>=7.0.0
+pytest-flask>=1.2.0
+```
+
+Install with:
+```bash
+pip install -r requirements.txt
+```
 
 ## Quick Start
 
@@ -96,7 +130,11 @@ python main.py --mode combined --export-pdf output/report.pdf --email-to user@ex
 Start the REST API server:
 
 ```bash
+# Development mode
 python api/app.py
+
+# Production mode
+gunicorn --bind 0.0.0.0:5000 api.app:app
 ```
 
 API endpoint: `http://localhost:5000/api/parse`
@@ -117,6 +155,103 @@ curl -X POST http://localhost:5000/api/parse \
       "smtp_tls": "true"
     }
   }'
+```
+
+#### API Endpoints
+
+- `GET /health` - Health check
+- `GET /api/parse` - API documentation
+- `POST /api/parse` - Parse IBM i files
+
+#### API Response Format
+
+```json
+{
+  "success": true,
+  "diagnostics_count": 0,
+  "cl_results": 1,
+  "rpg_results": 0,
+  "db2_results": 0,
+  "dspf_results": 0,
+  "analysis_reports": [
+    {
+      "file": "examples/example.clle",
+      "type": "CL",
+      "report": "Analysis report content...",
+      "ast_tree": "ASCII tree representation..."
+    }
+  ]
+}
+```
+
+## Docker Deployment
+
+### Build Docker Image
+
+```bash
+# Build the image
+docker build -t as400parser:latest .
+
+# Run locally
+docker run -p 5000:5000 as400parser:latest
+```
+
+### Docker Compose
+
+```bash
+# Start with docker-compose
+docker-compose up -d
+
+# Stop
+docker-compose down
+```
+
+## Kubernetes Deployment on GCP
+
+### Prerequisites
+
+1. Install Google Cloud SDK
+2. Install kubectl
+3. Authenticate with GCP
+
+```bash
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+gcloud container clusters get-credentials YOUR_CLUSTER_NAME --zone YOUR_ZONE
+```
+
+### Deploy to GKE
+
+```bash
+# Apply all configurations
+kubectl apply -f k8s/
+
+# Check deployment
+kubectl get pods -n as400parser
+
+# Get service URL
+kubectl get service as400parser-service -n as400parser
+```
+
+### Kubernetes Components
+
+- **Namespace**: `as400parser`
+- **Deployment**: 3 replicas with resource limits
+- **Service**: LoadBalancer type for external access
+- **ConfigMap**: Environment configuration
+- **Secret**: SMTP credentials (optional)
+
+### Monitoring and Scaling
+
+```bash
+# Scale deployment
+kubectl scale deployment as400parser --replicas=5 -n as400parser
+
+# View logs
+kubectl logs -f deployment/as400parser -n as400parser
+
+# Monitor resources
+kubectl top pods -n as400parser
 ```
 
 ### Programmatic

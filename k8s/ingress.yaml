@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: as400parser-ingress
+  namespace: as400parser
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "as400parser-ip"
+    networking.gke.io/managed-certificates: "as400parser-ssl-cert"
+spec:
+  rules:
+  - host: as400parser.your-domain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: as400parser-service
+            port:
+              number: 80

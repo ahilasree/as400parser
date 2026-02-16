@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: as400parser
+  namespace: as400parser
+  labels:
+    app: as400parser
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: as400parser
+  template:
+    metadata:
+      labels:
+        app: as400parser
+        version: v1
+    spec:
+      containers:
+      - name: as400parser
+        image: gcr.io/your-project-id/as400parser:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: as400parser-config
+        env:
+        - name: SMTP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: as400parser-secrets
+              key: smtp-username
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: as400parser-secrets
+              key: smtp-password
+        - name: SMTP_HOST
+          valueFrom:
+            secretKeyRef:
+              name: as400parser-secrets
+              key: smtp-host
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: output
+          mountPath: /app/output
+      volumes:
+      - name: output
+        emptyDir: {}
+      restartPolicy: Always

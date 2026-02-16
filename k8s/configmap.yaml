@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: as400parser-config
+  namespace: as400parser
+data:
+  FLASK_ENV: "production"
+  PYTHONPATH: "/app"
+  LOG_LEVEL: "INFO"
+  MAX_CONTENT_LENGTH: "16777216"  # 16MB max file size
