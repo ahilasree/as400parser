@@ -6,9 +6,13 @@ Demonstrates BRE capabilities on example AS400 files.
 """
 
 import json
+import sys
 from pathlib import Path
 
-from bre.extractor import BREAnalyzer
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+
+from business_rule_extraction.bre.extractor import BREAnalyzer
 
 def demo_bre_extraction():
     """Run BRE extraction demo on example files."""

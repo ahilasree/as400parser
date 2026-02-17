@@ -2,8 +2,12 @@
 Business Rule Extractor - Main extraction interface
 """
 
-from typing import List, Dict, Any
+import sys
 from pathlib import Path
+from typing import List, Dict, Any
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from .business_rules import BusinessRuleExtractor, RuleSet
 from cl.runner import run_cl_file

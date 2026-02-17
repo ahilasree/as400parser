@@ -88,6 +88,18 @@ AS400Parser/
 │   ├── ast_nodes.py
 │   ├── ast_builder.py
 │   └── runner.py
+├── business_rule_extraction/  # Business Rule Extraction (BRE) module
+│   ├── README.md              # BRE module documentation
+│   ├── BRE_ANALYSIS.md        # Technical analysis
+│   ├── BRE_DOCUMENTATION.md   # Complete documentation
+│   ├── bre_report.json        # Sample analysis results
+│   ├── bre/                   # Core BRE implementation
+│   │   ├── __init__.py        # Module initialization
+│   │   ├── business_rules.py  # Rule classification engine
+│   │   ├── extractor.py       # Main analysis interface
+│   │   └── demo.py            # Demonstration script
+│   ├── setup.py               # BRE module setup
+│   └── requirements.txt       # BRE-specific requirements
 ├── ui/                 # Tkinter UI
 │   └── main_ui.py
 ├── api/                # Web API endpoint
@@ -277,6 +289,23 @@ from dspf.runner import run_dspf_file
 
 cl_result = run_cl_file("prog.clle")
 rpg_result = run_rpg_file("prog.rpgle")
+```
+
+### Business Rule Extraction (BRE)
+
+Extract business rules from AS400 code for reverse engineering:
+
+```bash
+# Run BRE demo
+cd business_rule_extraction
+python bre/demo.py
+
+# Programmatic usage
+from business_rule_extraction.bre.extractor import BREAnalyzer
+
+analyzer = BREAnalyzer()
+rule_set = analyzer.analyze_file('examples/example.clle')
+report = analyzer.generate_report(rule_sets)
 ```
 
 ### UI
