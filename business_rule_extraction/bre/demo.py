@@ -23,7 +23,7 @@ def demo_bre_extraction():
     # Initialize analyzer
     analyzer = BREAnalyzer()
     
-    # Analyze all AS400 file types
+    # Analyze all AS400 file types including enhanced examples
     examples_dir = Path("examples")
     
     if not examples_dir.exists():
@@ -59,9 +59,10 @@ def demo_bre_extraction():
             print(f"  📊 Rules found: {len(rule_set.rules)}")
             print(f"  📋 Types: {rule_set.metrics}")
             
-            # Show top rules
+            # Show top rules with business context
             for i, rule in enumerate(rule_set.rules[:3]):
-                print(f"    {i+1}. [{rule.rule_type.value.upper()}] {rule.description}")
+                context_info = f" - {rule.business_context}" if rule.business_context else ""
+                print(f"    {i+1}. [{rule.rule_type.value.upper()}] {rule.description}{context_info}")
         
         except Exception as e:
             print(f"  ❌ Error: {e}")
@@ -85,8 +86,17 @@ def demo_bre_extraction():
             for rec in report['recommendations']:
                 print(f"  • {rec}")
         
+        # Display enhanced rule analysis
+        print(f"\n🔍 Enhanced Rule Analysis:")
+        for file_path, rule_set in all_rule_sets.items():
+            if rule_set.rules:
+                enhanced_rules = [r for r in rule_set.rules if r.business_context]
+                if enhanced_rules:
+                    file_name = Path(file_path).name
+                    print(f"  {file_name}: {len(enhanced_rules)} enhanced rules with business context")
+        
         # Save detailed report
-        output_file = "bre_report_all_types.json"
+        output_file = "bre_report_enhanced.json"
         with open(output_file, 'w') as f:
             json.dump(report, f, indent=2)
         

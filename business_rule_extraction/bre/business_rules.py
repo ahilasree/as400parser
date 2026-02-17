@@ -8,6 +8,8 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 from enum import Enum
 
+from .rule_patterns import RulePattern, AS400RulePatterns
+
 class RuleType(Enum):
     VALIDATION = "validation"
     CALCULATION = "calculation"
@@ -87,9 +89,10 @@ class BusinessRuleExtractor:
     def __init__(self):
         self.rule_counter = 0
         self.patterns = self._initialize_patterns()
+        self.comprehensive_patterns = AS400RulePatterns()
     
     def _initialize_patterns(self) -> Dict[str, Dict]:
-        """Initialize rule extraction patterns."""
+        """Initialize basic rule extraction patterns."""
         return {
             'cl': {
                 'validation': [
@@ -145,6 +148,17 @@ class BusinessRuleExtractor:
                     {'pattern': 'GRANT', 'description': 'Permission grant'},
                     {'pattern': 'REVOKE', 'description': 'Permission revoke'}
                 ]
+            },
+            'dspf': {
+                'validation': [
+                    {'pattern': 'CHECK', 'description': 'Field validation'},
+                    {'pattern': 'COMP', 'description': 'Field comparison'},
+                    {'pattern': 'VALUES', 'description': 'Valid values'}
+                ],
+                'data_access': [
+                    {'pattern': 'FILE', 'description': 'File reference'},
+                    {'pattern': 'RECORD', 'description': 'Record format'}
+                ]
             }
         }
     
@@ -156,7 +170,7 @@ class BusinessRuleExtractor:
             return rule_set
         
         for cmd in ast.commands:
-            rule = self._extract_cl_rule(cmd, source_file)
+            rule = self._extract_cl_rule_enhanced(cmd, source_file)
             if rule:
                 rule_set.add_rule(rule)
         
@@ -589,3 +603,92 @@ class BusinessRuleExtractor:
             return f"DSPF Record {record_name}: {condition} - {action}"
         else:
             return f"DSPF Record {record_name}: {action}"
+    
+    def _extract_cl_rule_enhanced(self, cmd, source_file: str) -> Optional[BusinessRule]:
+        """Extract enhanced CL rule using comprehensive patterns."""
+        self.rule_counter += 1
+        
+        # Get command name for pattern matching
+        cmd_name = getattr(cmd, 'name', '')
+        cmd_text = str(cmd).lower()
+        
+        # Find matching comprehensive patterns
+        pattern_matches = self.comprehensive_patterns.find_matching_patterns('cl', cmd_text)
+        
+        # Use enhanced classification if patterns found
+        if pattern_matches:
+            match = pattern_matches[0]  # Use first match
+            rule_type = self._map_pattern_to_rule_type(match['category'])
+            priority = self._map_priority_to_enum(match['priority'])
+            description = match['business_rule']
+        else:
+            # Fallback to basic classification
+            rule_type = self._classify_cl_command(cmd_name)
+            priority = self._determine_priority(cmd_name)
+            description = self._generate_description(cmd_name, "", "")
+        
+        # Extract condition and action
+        condition = self._extract_condition(cmd)
+        action = self._extract_action(cmd)
+        
+        # Extract variables and files
+        variables = self._extract_variables(cmd)
+        files_accessed = self._extract_files(cmd)
+        
+        # Add business context from patterns
+        business_context = ""
+        if pattern_matches:
+            business_context = f"Pattern: {pattern_matches[0]['description']}"
+        
+        return BusinessRule(
+            rule_id=f"RULE_{self.rule_counter:04d}",
+            rule_type=rule_type,
+            priority=priority,
+            description=description,
+            condition=condition,
+            action=action,
+            source_file=source_file,
+            line_number=getattr(cmd, 'loc', {}).line if hasattr(cmd, 'loc') else 0,
+            variables=variables,
+            files_accessed=files_accessed,
+            business_context=business_context
+        )
+    
+    def _map_pattern_to_rule_type(self, pattern_category: str) -> RuleType:
+        """Map pattern category to rule type."""
+        mapping = {
+            'cl_file_validation': RuleType.VALIDATION,
+            'cl_error_handling': RuleType.ERROR_HANDLING,
+            'cl_data_validation': RuleType.VALIDATION,
+            'cl_workflow_control': RuleType.WORKFLOW,
+            'cl_security_checks': RuleType.SECURITY,
+            'cl_business_calculation': RuleType.CALCULATION,
+            'rpg_field_validation': RuleType.VALIDATION,
+            'rpg_calculation_rules': RuleType.CALCULATION,
+            'rpg_file_operations': RuleType.DATA_ACCESS,
+            'rpg_indicator_logic': RuleType.WORKFLOW,
+            'rpg_procedure_calls': RuleType.INTEGRATION,
+            'rpg_data_transformation': RuleType.CALCULATION,
+            'db2_constraint_validation': RuleType.VALIDATION,
+            'db2_trigger_business_rules': RuleType.WORKFLOW,
+            'db2_stored_procedure_logic': RuleType.WORKFLOW,
+            'db2_data_integrity': RuleType.VALIDATION,
+            'db2_business_calculations': RuleType.CALCULATION,
+            'db2_access_control': RuleType.SECURITY,
+            'dspf_field_validation': RuleType.VALIDATION,
+            'dspf_indicator_conditions': RuleType.WORKFLOW,
+            'dspf_user_interface_rules': RuleType.WORKFLOW,
+            'dspf_data_entry_rules': RuleType.VALIDATION,
+            'dspf_function_key_handling': RuleType.WORKFLOW
+        }
+        return mapping.get(pattern_category, RuleType.WORKFLOW)
+    
+    def _map_priority_to_enum(self, priority_str: str) -> RulePriority:
+        """Map priority string to enum."""
+        mapping = {
+            'CRITICAL': RulePriority.CRITICAL,
+            'HIGH': RulePriority.HIGH,
+            'MEDIUM': RulePriority.MEDIUM,
+            'LOW': RulePriority.LOW
+        }
+        return mapping.get(priority_str.upper(), RulePriority.MEDIUM)

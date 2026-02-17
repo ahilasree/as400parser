@@ -1,0 +1,49 @@
+/* Enhanced CL Example with Comprehensive Business Rules */
+             PGM
+             
+/* File Validation Rules */
+             CHKOBJ     OBJ(&LIBRARY/&FILE) OBJTYPE(*FILE)
+             MONMSG     MSGID(CPF9801) EXEC(GOTO FILE_NOT_FOUND)
+             
+/* Error Handling Rules */
+             MONMSG     MSGID(CPF0000) EXEC(GOTO ERROR_HANDLER)
+             SNDPGMMSG  MSG('Starting order processing') MSGTYPE(*STATUS)
+             
+/* Data Validation Rules */
+             IF COND(&AMOUNT *GT 0) THEN(DO)
+                CHGVAR     VAR(&VALID) VALUE('Y')
+             ENDDO
+             ELSE CMD(GOTO INVALID_AMOUNT)
+             
+/* Security Check Rules */
+             CHKUSRPRF  USRPRF(&USER) AUT(*CHANGE)
+             MONMSG     MSGID(CPF9830) EXEC(GOTO NO_AUTHORITY)
+             
+/* Business Calculation Rules */
+             CHGVAR     VAR(&TAX) VALUE(&AMOUNT * 0.07)
+             CHGVAR     VAR(&TOTAL) VALUE(&AMOUNT + &TAX)
+             
+/* Workflow Control Rules */
+             CALL       PGM(ORDERPROC) PARM(&ORDER &STATUS)
+             IF COND(&STATUS *EQ 'ERROR') THEN(DO)
+                SNDPGMMSG  MSG('Order processing failed') MSGTYPE(*ESCAPE)
+                GOTO       CMDLBL(END_PROGRAM)
+             ENDDO
+             
+FILE_NOT_FOUND:
+             SNDPGMMSG  MSG('File not found') MSGTYPE(*ESCAPE)
+             GOTO       CMDLBL(END_PROGRAM)
+             
+INVALID_AMOUNT:
+             SNDPGMMSG  MSG('Amount must be greater than 0') MSGTYPE(*ESCAPE)
+             GOTO       CMDLBL(END_PROGRAM)
+             
+NO_AUTHORITY:
+             SNDPGMMSG  MSG('Insufficient authority') MSGTYPE(*ESCAPE)
+             GOTO       CMDLBL(END_PROGRAM)
+             
+ERROR_HANDLER:
+             SNDPGMMSG  MSG('Processing error occurred') MSGTYPE(*ESCAPE)
+             
+END_PROGRAM:
+             ENDPGM
