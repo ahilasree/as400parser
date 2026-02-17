@@ -23,31 +23,38 @@ def demo_bre_extraction():
     # Initialize analyzer
     analyzer = BREAnalyzer()
     
-    # Analyze example files
+    # Analyze all AS400 file types
     examples_dir = Path("examples")
     
     if not examples_dir.exists():
         print("❌ Examples directory not found")
         return
     
-    # Find CL files
-    cl_files = list(examples_dir.glob("*.clle"))
+    # Find all AS400 files
+    file_patterns = ["*.clle", "*.rpgle", "*.rpg", "*.sql", "*.dspf"]
+    all_files = []
     
-    if not cl_files:
-        print("❌ No CL files found in examples directory")
+    for pattern in file_patterns:
+        files = list(examples_dir.glob(pattern))
+        all_files.extend(files)
+    
+    if not all_files:
+        print("❌ No AS400 files found in examples directory")
         return
     
-    print(f"📁 Found {len(cl_files)} CL files")
+    print(f"📁 Found {len(all_files)} AS400 files:")
+    for file_path in all_files:
+        print(f"  - {file_path.name} ({file_path.suffix})")
     
     # Analyze each file
     all_rule_sets = {}
     
-    for cl_file in cl_files:
-        print(f"\n🔍 Analyzing: {cl_file.name}")
+    for file_path in all_files:
+        print(f"\n🔍 Analyzing: {file_path.name} ({file_path.suffix})")
         
         try:
-            rule_set = analyzer.analyze_file(str(cl_file))
-            all_rule_sets[str(cl_file)] = rule_set
+            rule_set = analyzer.analyze_file(str(file_path))
+            all_rule_sets[str(file_path)] = rule_set
             
             print(f"  📊 Rules found: {len(rule_set.rules)}")
             print(f"  📋 Types: {rule_set.metrics}")
@@ -79,7 +86,7 @@ def demo_bre_extraction():
                 print(f"  • {rec}")
         
         # Save detailed report
-        output_file = "bre_report.json"
+        output_file = "bre_report_all_types.json"
         with open(output_file, 'w') as f:
             json.dump(report, f, indent=2)
         

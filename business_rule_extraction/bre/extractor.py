@@ -13,6 +13,7 @@ from .business_rules import BusinessRuleExtractor, RuleSet
 from cl.runner import run_cl_file
 from rpg.runner import run_rpg_file
 from db2.runner import run_db2_file
+from dspf.runner import run_dspf_file
 
 class BREAnalyzer:
     """Main Business Rule Extraction analyzer."""
@@ -38,6 +39,9 @@ class BREAnalyzer:
         elif file_path.suffix.lower() in ['.sql']:
             result = run_db2_file(str(file_path))
             return self.extractor.extract_from_db2(result.ast, str(file_path))
+        elif file_path.suffix.lower() in ['.dspf']:
+            result = run_dspf_file(str(file_path))
+            return self.extractor.extract_from_dspf(result.ast, str(file_path))
         else:
             raise ValueError(f"Unsupported file type: {file_path.suffix}")
     
